@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use std::ops::Mul;
 use utils::generate_random_elements;
 
@@ -14,10 +14,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     // arkworks-ff
     {
         c.bench_function(
-            &format!(
-                "{} 10K elements | ark-ff - commit: ef8f758 ",
-                BENCHMARK_NAME
-            ),
+            &format!("{BENCHMARK_NAME} 10K elements | ark-ff - commit: ef8f758 "),
             |b| {
                 b.iter(|| {
                     let mut iter = arkworks_vec.iter();
@@ -37,7 +34,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         let lambdaworks_vec = to_lambdaworks_vec(&arkworks_vec);
 
         c.bench_function(
-            &format!("{} 10K elements | lambdaworks", BENCHMARK_NAME,),
+            &format!("{BENCHMARK_NAME} 10K elements | lambdaworks"),
             |b| {
                 b.iter(|| {
                     let mut iter = lambdaworks_vec.iter();

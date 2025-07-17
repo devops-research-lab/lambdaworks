@@ -1,7 +1,7 @@
 use ark_ff::Field;
 use ark_std::UniformRand;
 use ark_test_curves::starknet_fp::Fq as F;
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 
 use crate::utils::to_lambdaworks_vec;
 
@@ -22,7 +22,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     // arkworks-ff
     {
         c.bench_function(
-            &format!("{} 100 elements | ark-ff - ef8f758", BENCHMARK_NAME),
+            &format!("{BENCHMARK_NAME} 100 elements | ark-ff - ef8f758"),
             |b| {
                 b.iter(|| {
                     let mut iter = arkworks_vec.iter();
@@ -41,7 +41,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         let lambdaworks_vec = to_lambdaworks_vec(&arkworks_vec);
 
         c.bench_function(
-            &format!("{} 100 elements | lambdaworks", BENCHMARK_NAME,),
+            &format!("{BENCHMARK_NAME} 100 elements | lambdaworks"),
             |b| {
                 b.iter(|| {
                     let mut iter = lambdaworks_vec.iter();
