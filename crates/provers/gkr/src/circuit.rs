@@ -59,8 +59,8 @@ impl CircuitLayer {
 #[derive(Debug, Clone)]
 pub enum CircuitError {
     InputsNotPowerOfTwo,
-    LayerNotPowerOfTwo(usize), // index of the layer that is not a power of two
-    GateInputsError(usize),    // index of the layer with invalid gate inputs
+    LayerNotPowerOfTwo(usize),
+    GateInputsError(usize),
     EmptyCircuitError,
 }
 
@@ -95,8 +95,9 @@ pub struct Circuit {
 }
 
 /// An evaluation of a `Circuit` on some input.
+/// Stores the outputs, every circuit layer intermediate evaluations and the inputs
 pub struct CircuitEvaluation<F> {
-    /// Evaluations on per-layer basis. First layer is the output and last layer is the input.
+    /// Evaluations on per-layer. First layer is the output and last layer is the input.
     pub layers: Vec<Vec<F>>,
 }
 
@@ -125,21 +126,21 @@ impl Circuit {
             let next_layer = &layer_pair[1];
             let next_layer_gates = next_layer.len();
 
-            for gate in &current_layer.gates {
+            if current_layer.gates.iter().any(|gate| {
                 let [a, b] = gate.inputs_idx;
-                if a >= next_layer_gates || b >= next_layer_gates {
-                    return Err(CircuitError::GateInputsError(i));
-                }
+                a >= next_layer_gates || b >= next_layer_gates
+            }) {
+                return Err(CircuitError::GateInputsError(i));
             }
         }
 
         // Validate that the last layer gate inputs don't exceed the number of inputs
         if let Some(last_layer) = layers.last() {
-            for gate in &last_layer.gates {
+            if last_layer.gates.iter().any(|gate| {
                 let [a, b] = gate.inputs_idx;
-                if a >= num_inputs || b >= num_inputs {
-                    return Err(CircuitError::GateInputsError(layers.len() - 1));
-                }
+                a >= num_inputs || b >= num_inputs
+            }) {
+                return Err(CircuitError::GateInputsError(layers.len() - 1));
             }
         }
 
