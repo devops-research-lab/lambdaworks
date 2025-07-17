@@ -1,7 +1,7 @@
 use ark_ff::Field;
 use ark_std::UniformRand;
 use ark_test_curves::starknet_fp::Fq as F;
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use crate::utils::to_lambdaworks_vec;
 

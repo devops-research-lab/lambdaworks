@@ -1,9 +1,9 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use lambdaworks_math::{
     cyclic_group::IsGroup,
     elliptic_curve::{short_weierstrass::curves::stark_curve::StarkCurve, traits::IsEllipticCurve},
 };
-use starknet_curve::{AffinePoint, ProjectivePoint, curve_params::GENERATOR};
+use starknet_curve::{curve_params::GENERATOR, AffinePoint, ProjectivePoint};
 use std::ops::{Add, AddAssign};
 
 const BENCHMARK_NAME: &str = "point";

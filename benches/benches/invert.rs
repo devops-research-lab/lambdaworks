@@ -1,5 +1,5 @@
 use ark_ff::Field;
-use criterion::{BatchSize, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion};
 use utils::generate_random_elements;
 
 use crate::utils::to_lambdaworks_vec;

@@ -5,14 +5,14 @@ use lambdaworks_crypto::fiat_shamir::default_transcript::DefaultTranscript;
 use lambdaworks_crypto::fiat_shamir::is_transcript::IsTranscript;
 use lambdaworks_math::field::element::FieldElement;
 use lambdaworks_math::field::traits::{HasDefaultTranscript, IsField};
-use lambdaworks_math::polynomial::Polynomial;
 use lambdaworks_math::polynomial::dense_multilinear_poly::DenseMultilinearPolynomial;
+use lambdaworks_math::polynomial::Polynomial;
 use lambdaworks_math::traits::ByteConversion;
 use std::ops::Mul;
 
 pub use prover::ProverOutput;
-pub use prover::{Prover, ProverError, prove};
-pub use verifier::{Verifier, VerifierError, VerifierRoundResult, verify};
+pub use prover::{prove, Prover, ProverError};
+pub use verifier::{verify, Verifier, VerifierError, VerifierRoundResult};
 
 // Wrappers for the prover and verifier functions
 pub fn prove_linear<F>(poly: DenseMultilinearPolynomial<F>) -> ProverOutput<F>

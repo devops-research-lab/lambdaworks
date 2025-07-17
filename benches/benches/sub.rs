@@ -1,4 +1,4 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::{ops::Sub, time::Duration};
 use utils::{generate_random_elements, to_lambdaworks_vec};
 

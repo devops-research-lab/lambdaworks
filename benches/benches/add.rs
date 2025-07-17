@@ -1,6 +1,6 @@
 use std::{ops::Add, time::Duration};
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use utils::generate_random_elements;
 
 use crate::utils::to_lambdaworks_vec;
