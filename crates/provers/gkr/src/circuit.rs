@@ -56,19 +56,6 @@ impl CircuitLayer {
     }
 }
 
-/// An evaluation of a `Circuit` on some input.
-pub struct CircuitEvaluation<F> {
-    /// Evaluations on per-layer basis.
-    pub layers: Vec<Vec<F>>,
-}
-
-impl<F: Copy> CircuitEvaluation<F> {
-    /// Takes a gate label and outputs the corresponding gate's value at layer `layer`.
-    pub fn w(&self, layer: usize, label: usize) -> F {
-        self.layers[layer][label]
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum CircuitError {
     InputsNotPowerOfTwo,
@@ -99,13 +86,18 @@ pub enum CircuitError {
 /// - The circuit is evaluated from inputs upward, but layers are stored from output to input.
 #[derive(Clone)]
 pub struct Circuit {
-    /// First layer being the output layer, last layer being
-    /// the input layer.
+    /// First layer is the output layer. It doesn't include the input layer.
     layers: Vec<CircuitLayer>,
 
     /// Number of inputs
     num_inputs: usize,
     input_num_vars: usize, // log2 of number of inputs
+}
+
+/// An evaluation of a `Circuit` on some input.
+pub struct CircuitEvaluation<F> {
+    /// Evaluations on per-layer basis. First layer is the output and last layer is the input.
+    pub layers: Vec<Vec<F>>,
 }
 
 impl Circuit {
@@ -196,20 +188,9 @@ impl Circuit {
             current_input = temp_layer;
         }
 
+        // Reverse the order so that the first layer is the output layer.
         layers.reverse();
         CircuitEvaluation { layers }
-    }
-
-    /// The $\text{add}_i(a, b, c)$ polynomial value at layer $i$.
-    pub fn add_i(&self, i: usize, a: usize, b: usize, c: usize) -> bool {
-        let gate = &self.layers[i].gates[a];
-        gate.gate_type == GateType::Add && gate.inputs_idx[0] == b && gate.inputs_idx[1] == c
-    }
-
-    /// The $\text{mul}_i(a, b, c)$ polynomial value at layer $i$.
-    pub fn mul_i(&self, i: usize, a: usize, b: usize, c: usize) -> bool {
-        let gate = &self.layers[i].gates[a];
-        gate.gate_type == GateType::Mul && gate.inputs_idx[0] == b && gate.inputs_idx[1] == c
     }
 
     pub fn layers(&self) -> &[CircuitLayer] {
@@ -224,6 +205,7 @@ impl Circuit {
         self.num_inputs
     }
 
+    /// The multilinear polynomial extension of the function `add_i(a, b, c)`, where `a` is fixed at `r_i`.
     pub fn add_i_ext<F: IsField>(
         &self,
         r_i: &[FieldElement<F>],
@@ -240,6 +222,8 @@ impl Circuit {
         };
         let total_vars = num_vars_current + 2 * num_vars_next;
         let mut add_i_evals = vec![FieldElement::zero(); 1 << total_vars];
+
+        // For each Add gate, we set the corresponding index `a || b || c` in the evaluation vector to one.
         for (a, gate) in self.layers[i].gates.iter().enumerate() {
             if gate.gate_type == GateType::Add {
                 let b = gate.inputs_idx[0];
@@ -248,13 +232,15 @@ impl Circuit {
                 add_i_evals[idx] = FieldElement::one();
             }
         }
-        let mut p = DenseMultilinearPolynomial::new(add_i_evals);
+
+        let mut add_i_poly = DenseMultilinearPolynomial::new(add_i_evals);
         for val in r_i.iter() {
-            p = p.fix_first_variable(val);
+            add_i_poly = add_i_poly.fix_first_variable(val);
         }
-        p
+        add_i_poly
     }
 
+    /// The multilinear polynomial extension of the function `mul_i(a, b, c)`, where `a` is fixed at `r_i`.
     pub fn mul_i_ext<F: IsField>(
         &self,
         r_i: &[FieldElement<F>],
@@ -271,6 +257,8 @@ impl Circuit {
         };
         let total_vars = num_vars_current + 2 * num_vars_next;
         let mut mul_i_evals = vec![FieldElement::zero(); 1 << total_vars];
+
+        // For each Mul gate, we set the corresponding index `a || b || c` in the evaluation vector to one.
         for (a, gate) in self.layers[i].gates.iter().enumerate() {
             if gate.gate_type == GateType::Mul {
                 let b = gate.inputs_idx[0];
@@ -279,10 +267,11 @@ impl Circuit {
                 mul_i_evals[idx] = FieldElement::one();
             }
         }
-        let mut p = DenseMultilinearPolynomial::new(mul_i_evals);
+
+        let mut mul_i_poly = DenseMultilinearPolynomial::new(mul_i_evals);
         for val in r_i.iter() {
-            p = p.fix_first_variable(val);
+            mul_i_poly = mul_i_poly.fix_first_variable(val);
         }
-        p
+        mul_i_poly
     }
 }
