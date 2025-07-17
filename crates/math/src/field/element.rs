@@ -794,7 +794,7 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let value: UnsignedInteger<NUM_LIMBS> = self.representative();
-        write!(f, "{}", value)
+        write!(f, "{value}")
     }
 }
 
