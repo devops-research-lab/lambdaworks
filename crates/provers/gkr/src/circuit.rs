@@ -96,9 +96,9 @@ pub struct Circuit {
 
 /// An evaluation of a `Circuit` on some input.
 /// Stores the outputs, every circuit layer intermediate evaluations and the inputs
-pub struct CircuitEvaluation<F> {
+pub struct CircuitEvaluation<F: IsField> {
     /// Evaluations on per-layer. First layer is the output and last layer is the input.
-    pub layers: Vec<Vec<F>>,
+    pub layers: Vec<Vec<FieldElement<F>>>,
 }
 
 impl Circuit {
@@ -162,7 +162,7 @@ impl Circuit {
     }
 
     /// Evaluate a `Circuit` on a given input.
-    pub fn evaluate<F>(&self, input: &[FieldElement<F>]) -> CircuitEvaluation<FieldElement<F>>
+    pub fn evaluate<F>(&self, input: &[FieldElement<F>]) -> CircuitEvaluation<F>
     where
         F: IsField,
     {
