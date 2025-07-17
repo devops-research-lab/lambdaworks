@@ -57,6 +57,8 @@ impl CircuitLayer {
 }
 
 /// An evaluation of a `Circuit` on some input.
+/// Stores every circuit layer intermediate evaluations and the
+/// circuit evaluation outputs.
 pub struct CircuitEvaluation<F> {
     /// Evaluations on per-layer basis.
     pub layers: Vec<Vec<F>>,
@@ -72,8 +74,8 @@ impl<F: Copy> CircuitEvaluation<F> {
 #[derive(Debug, Clone)]
 pub enum CircuitError {
     InputsNotPowerOfTwo,
-    LayerNotPowerOfTwo(usize), // index of the layer that is not a power of two
-    GateInputsError(usize),    // index of the layer with invalid gate inputs
+    LayerNotPowerOfTwo(usize),
+    GateInputsError(usize),
     EmptyCircuitError,
 }
 
@@ -133,21 +135,21 @@ impl Circuit {
             let next_layer = &layer_pair[1];
             let next_layer_gates = next_layer.len();
 
-            for gate in &current_layer.gates {
+            if current_layer.gates.iter().any(|gate| {
                 let [a, b] = gate.inputs_idx;
-                if a >= next_layer_gates || b >= next_layer_gates {
-                    return Err(CircuitError::GateInputsError(i));
-                }
+                a >= next_layer_gates || b >= next_layer_gates
+            }) {
+                return Err(CircuitError::GateInputsError(i));
             }
         }
 
         // Validate that the last layer gate inputs don't exceed the number of inputs
         if let Some(last_layer) = layers.last() {
-            for gate in &last_layer.gates {
+            if last_layer.gates.iter().any(|gate| {
                 let [a, b] = gate.inputs_idx;
-                if a >= num_inputs || b >= num_inputs {
-                    return Err(CircuitError::GateInputsError(layers.len() - 1));
-                }
+                a >= num_inputs || b >= num_inputs
+            }) {
+                return Err(CircuitError::GateInputsError(layers.len() - 1));
             }
         }
 
@@ -200,13 +202,13 @@ impl Circuit {
         CircuitEvaluation { layers }
     }
 
-    /// The $\text{add}_i(a, b, c)$ polynomial value at layer $i$.
+    /// The add_i(a, b, c) polynomial value at layer i.
     pub fn add_i(&self, i: usize, a: usize, b: usize, c: usize) -> bool {
         let gate = &self.layers[i].gates[a];
         gate.gate_type == GateType::Add && gate.inputs_idx[0] == b && gate.inputs_idx[1] == c
     }
 
-    /// The $\text{mul}_i(a, b, c)$ polynomial value at layer $i$.
+    /// The mul_i(a, b, c) polynomial value at layer i.
     pub fn mul_i(&self, i: usize, a: usize, b: usize, c: usize) -> bool {
         let gate = &self.layers[i].gates[a];
         gate.gate_type == GateType::Mul && gate.inputs_idx[0] == b && gate.inputs_idx[1] == c
