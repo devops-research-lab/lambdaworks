@@ -1,37 +1,37 @@
 name: CI
-
 on:
-  pull_request:
-    branches: [ '*' ]
-
+  push: null
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   fetch_iai_benchs:
     name: Fetch iai benchmarks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - name: Check cache
       id: cache-iai-results
       uses: actions/cache/restore@v3
       with:
         lookup-only: true
-        path: |
-          */target
+        path: '*/target
+
+          '
         key: ${{ runner.os }}-iai-benchmark-cache-${{ github.event.pull_request.base.sha }}
     - name: Install valgrind
       if: ${{ steps.cache-iai-results.outputs.cache-hit != 'true' }}
-      run: |
-        sudo apt update
+      run: 'sudo apt update
+
         sudo apt-get install -y valgrind
+
         cargo install --version 0.3.1 iai-callgrind-runner
+
+        '
     - name: Install stable toolchain
       if: ${{ steps.cache-iai-results.outputs.cache-hit != 'true' }}
       uses: dtolnay/rust-toolchain@stable
       with:
-          toolchain: stable
+        toolchain: stable
     - uses: actions/checkout@v3
       if: ${{ steps.cache-iai-results.outputs.cache-hit != 'true' }}
       with:
@@ -47,23 +47,27 @@ jobs:
       if: ${{ steps.cache-iai-results.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@v3
       with:
-        path: |
-          */target
+        path: '*/target
+
+          '
         key: ${{ runner.os }}-iai-benchmark-cache-${{ github.event.pull_request.base.sha }}
   run_iai_benchs:
     name: Run iai benchmarks
     needs: fetch_iai_benchs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - name: Install valgrind
-      run: |
-        sudo apt-get update
+      run: 'sudo apt-get update
+
         sudo apt-get install -y valgrind
+
         cargo install --version 0.3.1 iai-callgrind-runner
+
+        '
     - name: Install stable toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
-          toolchain: stable
+        toolchain: stable
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
       with:
@@ -72,8 +76,9 @@ jobs:
       id: cache-iai-results
       uses: actions/cache/restore@v3
       with:
-        path: |
-          */target
+        path: '*/target
+
+          '
         key: ${{ runner.os }}-iai-benchmark-cache-${{ github.event.pull_request.base.sha }}
         fail-on-cache-miss: true
     - name: Run benchmarks
